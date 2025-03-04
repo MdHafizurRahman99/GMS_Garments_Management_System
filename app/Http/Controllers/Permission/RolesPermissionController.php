@@ -15,7 +15,9 @@ class RolesPermissionController extends Controller
      */
     public function index()
     {
-        $rolesWithPermissions = Role::with('roleHasPermissions.permission')->get();
+        // $rolesWithPermissions = Role::with('roleHasPermissions.permission')->get();
+        $rolesWithPermissions = Role::with('permissions')->get();
+
         // return $rolesWithPermissions;
         // Group the permissions by role_id
         // $groupedRoles = $rolesWithPermissions->groupBy('id');

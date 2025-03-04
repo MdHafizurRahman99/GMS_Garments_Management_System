@@ -22,8 +22,15 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'profile_picture',
         'role',
         'password',
+        'HourlyRate',
+        'Salary',
+        'BankAccountNumber',
+        'TaxFileNumber',
+        'BankAccountNumber',
+        'TaxFileNumber',
     ];
 
     /**
@@ -46,13 +53,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
     ];
 
-    // public function roles()
-    // {
-    //     return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')->where('model_type', 'App\Models\User');
-    // }
     public function userRoles()
     {
         return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')
-            ->where('model_type', 'App\Models\User'); // Specify the model type
+            ->where('model_type', 'App\Models\User');
     }
 }

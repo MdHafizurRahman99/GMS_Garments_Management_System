@@ -56,7 +56,6 @@ class Staff extends Model
         'kin_work',
         'about_validate_file',
         'address_validate_file',
-
     ];
     public function schedules()
     {

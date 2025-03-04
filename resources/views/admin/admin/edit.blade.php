@@ -49,7 +49,7 @@
                             <div class="inner">
                                 <div class="form-group">
                                     <label for="name">Admin Name</label>
-                                    <input required type="text" id="name" name="name"
+                                    <input required type="text" id="name" name="name" disabled
                                         value="{{ old('name', $admin->name ?? '') }}" class="form-control"
                                         placeholder="Enter Admin Name">
 
@@ -59,7 +59,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="email">Email</label>
-                                    <input required type="email" id="email" name="email"
+                                    <input required type="email" id="email" name="email" disabled
                                         value="{{ old('email', $admin->email ?? '') }}" class="form-control"
                                         placeholder=" Email">
                                     @error('email')

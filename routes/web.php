@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusniessProfileController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientRequestController;
+use App\Http\Controllers\CostController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Permission\RolesPermissionController;
 use App\Http\Controllers\ProfileController;
@@ -13,6 +17,8 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\StaffScheduleController;
 use App\Http\Controllers\TryTestController;
+use App\Http\Controllers\UserProfileController;
+use App\Models\Cost;
 use App\Models\StaffSchedule;
 use Illuminate\Support\Facades\Route;
 
@@ -26,19 +32,46 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('front-end.home.home');
-})->name('/');
+Route::get('/helo', function () {
+    return 'Hello, World!';
+});
+// Route::GET('/', function () {
+//     return view('front-end.home.home');
+// })->name('/');
 
-Route::get('/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/', function () {
+    return redirect('/login');
+})->name('/');
+// Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('/');
+Route::get('/dashboard',
+//  [CostController::class, 'index']
+function () {
+    $user = auth()->user();
+    return view('admin.profile.show', compact('user'));
+    // $costs = Cost::orderBy('created_at', 'desc')->paginate(10);
+    // return view('admin.dashboard', compact('costs'));
+}
+)->middleware(['auth', 'verified'])->name('dashboard');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::resource('costs', CostController::class);
+    Route::resource('payrolls', PayrollController::class);
+
+    Route::get('/user-profile', [UserProfileController::class, 'show'])->name('user-profile.show');
+    Route::put('/user-profile', [UserProfileController::class, 'update'])->name('user-profile.update');
+    Route::put('/user-profile/password', [UserProfileController::class, 'updatePassword'])->name('user-profile.password');
+
+// Route::middleware(['auth'])->group(function () {
+    Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
+    Route::post('/leaves', [LeaveController::class, 'store'])->name('leaves.store');
+    Route::patch('/leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.update-status');
+    Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
+// });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -132,6 +165,6 @@ Route::middleware('auth')->group(function () {
     Route::post('staffschedule/destroy/{id}', [StaffScheduleController::class, 'destroy'])->name('staffschedule.destroy')->middleware('permission:staffschedule.delete');
 });
 
-// use for test 
+// use for test
 Route::resource('test', TryTestController::class);
 require __DIR__ . '/auth.php';
