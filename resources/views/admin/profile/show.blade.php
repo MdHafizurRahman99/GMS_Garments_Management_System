@@ -3,7 +3,91 @@
 @section('title', 'User Profile')
 
 @section('css')
-    <!-- Add any additional CSS here -->
+    <style>
+        /* Responsive styles */
+        @media (max-width: 991px) {
+            .col-lg-8 {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .d-flex.align-items-center.mb-4 {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .position-relative.mr-3 {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .modal-dialog.modal-lg {
+                max-width: 95%;
+                margin: 0.5rem auto;
+            }
+
+            .card-body .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .container-fluid {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .card-header, .card-body {
+                padding: 1rem;
+            }
+
+            .img-profile {
+                width: 80px !important;
+                height: 80px !important;
+            }
+
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin: 0.25rem 0;
+            }
+        }
+
+        .modal-dialog.modal-lg {
+            max-width: 95%;
+            margin: 1rem auto;
+        }
+
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 575px) {
+            .modal-dialog.modal-lg {
+                max-width: 100%;
+                margin: 0.5rem;
+            }
+
+            .modal-content {
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                max-height: calc(95vh - 120px); /* Adjust based on your header and footer height */
+                overflow-y: auto;
+            }
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -221,6 +305,33 @@
 
             // Log to console for debugging
             console.log('User profile script loaded');
+
+            function adjustModalForMobile() {
+                if (window.innerWidth < 576) {
+                    $('.modal-dialog').addClass('modal-fullscreen');
+                    $('.modal-content').css('height', '100%');
+                } else {
+                    $('.modal-dialog').removeClass('modal-fullscreen');
+                    $('.modal-content').css('height', '');
+                }
+            }
+
+            // Call on page load
+            adjustModalForMobile();
+
+            // Call on window resize
+            $(window).resize(adjustModalForMobile);
+
+            // Ensure modal body is scrollable
+            $('#editProfileModal').on('shown.bs.modal', function () {
+                const modalHeader = $(this).find('.modal-header').outerHeight();
+                const modalFooter = $(this).find('.modal-footer').outerHeight();
+                const windowHeight = window.innerHeight;
+                const modalBody = $(this).find('.modal-body');
+                modalBody.css('max-height', windowHeight - modalHeader - modalFooter - 30); // 30px for padding
+                modalBody.css('overflow-y', 'auto');
+            });
         });
     </script>
 @endsection
+

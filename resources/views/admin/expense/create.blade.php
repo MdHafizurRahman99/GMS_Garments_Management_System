@@ -8,64 +8,68 @@
             border-collapse: collapse;
             margin-bottom: 1rem;
         }
-
         .expense-grid th {
             background-color: #f8f9fa;
             position: sticky;
             top: 0;
             z-index: 10;
         }
-
-        .expense-grid th,
-        .expense-grid td {
+        .expense-grid th, .expense-grid td {
             border: 1px solid #dee2e6;
             padding: 0.5rem;
         }
-
-        .expense-grid input,
-        .expense-grid select {
+        .expense-grid input, .expense-grid select {
             width: 100%;
             padding: 0.375rem;
             border: none;
             background: transparent;
         }
-
-        .expense-grid input:focus,
-        .expense-grid select:focus {
+        .expense-grid input:focus, .expense-grid select:focus {
             outline: 2px solid #0d6efd;
             border-radius: 2px;
         }
-
         .expense-grid tr:hover {
             background-color: #f8f9fa;
         }
-
         .file-preview {
             max-width: 50px;
             max-height: 50px;
             margin-right: 5px;
         }
-
         .image-preview-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .expense-grid th:first-child,
         .expense-grid td:first-child {
             width: 120px;
+        }
+        @media (max-width: 768px) {
+            .expense-grid {
+                font-size: 0.875rem;
+            }
+            .expense-grid th, .expense-grid td {
+                padding: 0.25rem;
+            }
+            .btn-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-group .btn {
+                margin-bottom: 0.5rem;
+            }
         }
     </style>
 @endsection
 
 @section('content')
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Add Expenses</h1>
-            <div>
-                <a href="{{ route('costs.index') }}" class="btn btn-outline-secondary me-2">Back to List</a>
-                <button type="button" class="btn btn-secondary me-2" onclick="addRow()">Add Row</button>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <h1 class="mb-3 mb-md-0">Add Expenses</h1>
+            <div class="btn-group">
+                <a href="{{ route('costs.index') }}" class="btn btn-outline-secondary me-2 mb-2 mb-md-0">Back to List</a>
+                <button type="button" class="btn btn-secondary me-2 mb-2 mb-md-0" onclick="addRow()">Add Row</button>
                 <button type="submit" form="expenseForm" class="btn btn-primary">Submit Expenses</button>
             </div>
         </div>
@@ -79,7 +83,6 @@
                 </ul>
             </div>
         @endif
-
 
         <form id="expenseForm" action="{{ route('costs.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -239,3 +242,4 @@
         });
     </script>
 @endsection
+
