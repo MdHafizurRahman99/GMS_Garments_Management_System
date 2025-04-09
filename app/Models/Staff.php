@@ -61,4 +61,12 @@ class Staff extends Model
     {
         return $this->hasMany(StaffSchedule::class);
     }
+
+    /**
+     * Get the attendance records for the staff.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(StaffAttendance::class);
+    }
 }

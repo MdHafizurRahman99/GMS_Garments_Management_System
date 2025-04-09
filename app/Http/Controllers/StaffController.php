@@ -48,24 +48,19 @@ class StaffController extends Controller
     public function create()
     {
         return view('admin.staff.create(updated)');
-        //
     }
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-
         // $ip = $_SERVER['REMOTE_ADDR'];
         // return $ip;
         // $this->image = $request->file('address_validate_file');
         // return $this->image;
         // return $request;
         // dd($request->file('address_validate_file')->getMimeType());
-
         // Retrieve ABN from the form or request
-
         // SoapWrapper::service('abr', function ($service) use ($abn) {
         //     try {
         //         $response = $service->call('ABRSearchByABN', [
@@ -110,9 +105,9 @@ class StaffController extends Controller
             'email' => ['required', 'regex:/[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}/',],
             'business_number' => ['required_if:contractor,Yes',    function ($attribute, $value, $fail) use ($request) {
                 // Performing custom validation logic here
-                if (!$this->ValidateABN($value) && $request->contractor == 'Yes') {
-                    $fail('The ABN format is invalid.');
-                }
+                // if (!$this->ValidateABN($value) && $request->contractor == 'Yes') {
+                //     $fail('The ABN format is invalid.');
+                // }
             },],
             'employee_tax_file' => [function ($attribute, $value, $fail) use ($request) {
                 // Performing custom validation logic here
@@ -257,7 +252,7 @@ class StaffController extends Controller
         $output_abn = chunk_split(substr($abn, 0, 2), 2, ' ') . chunk_split(substr($abn, 2), 3, ' ');
         $output_abn = rtrim($output_abn);
 
-        //formting acn 
+        //formting acn
         $acn = preg_replace("/[^\d]/", "", $request->company_number);
         $output_acn =  chunk_split($acn, 3, ' ');
         $output_acn = rtrim($output_acn);
@@ -493,9 +488,9 @@ class StaffController extends Controller
             'email' => ['required', 'regex:/[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}/',],
             'business_number' => ['required_if:contractor,Yes',    function ($attribute, $value, $fail) use ($request) {
                 // Performing custom validation logic here
-                if (!$this->ValidateABN($value) && $request->contractor == 'Yes') {
-                    $fail('The ABN format is invalid.');
-                }
+                // if (!$this->ValidateABN($value) && $request->contractor == 'Yes') {
+                //     $fail('The ABN format is invalid.');
+                // }
             },],
             'employee_tax_file' => [function ($attribute, $value, $fail) use ($request) {
                 // Performing custom validation logic here
@@ -638,7 +633,7 @@ class StaffController extends Controller
         $output_abn = chunk_split(substr($abn, 0, 2), 2, ' ') . chunk_split(substr($abn, 2), 3, ' ');
         $output_abn = rtrim($output_abn);
 
-        //formting acn 
+        //formting acn
         $acn = preg_replace("/[^\d]/", "", $request->company_number);
         $output_acn =  chunk_split($acn, 3, ' ');
         $output_acn = rtrim($output_acn);
@@ -768,7 +763,7 @@ class StaffController extends Controller
 
         // // check length is 11 digits
         // if (strlen($abn) == 11) {
-        //     // apply ato check method 
+        //     // apply ato check method
         //     $sum = 0;
         //     foreach ($weights as $position => $weight) {
         //         $digit = $abn[$position] - ($position ? 0 : 1);
@@ -809,7 +804,7 @@ class StaffController extends Controller
 
         // check length is 9 digits
         if (strlen($acn) == 9) {
-            // apply ato check method 
+            // apply ato check method
             $sum = 0;
             foreach ($weights as $position => $weight) {
                 $sum += $weight * $acn[$position];

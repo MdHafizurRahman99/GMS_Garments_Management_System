@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('expense_id');
             $table->string('user_id');
             $table->string('order_id')->nullable();
+            $table->string('customer_id')->nullable();
+            $table->string('product_id')->nullable();
             $table->string('image_path')->nullable();
             $table->date('date');
             $table->timestamps();

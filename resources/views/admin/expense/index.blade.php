@@ -251,54 +251,42 @@
         .modal {
             background-color: rgba(0, 0, 0, 0.5);
         }
-
         .cursor-pointer {
             cursor: pointer;
         }
-
         .other-type-input {
             display: none;
         }
-
-        #expenseChart,
-        #yearlyExpenseChart {
+        #expenseChart, #yearlyExpenseChart {
             min-height: 300px;
         }
-
         .expense-image-preview {
             max-width: 50px;
             max-height: 50px;
             cursor: pointer;
         }
-
         #imageModal .modal-body {
             text-align: center;
         }
-
         #imageModal .modal-body img {
             max-width: 100%;
             max-height: 80vh;
             object-fit: contain;
         }
-
         .table-responsive {
             overflow-x: auto;
         }
-
         .chart-container {
             position: relative;
             height: 50vh;
             width: 100%;
         }
-
         @media (max-width: 768px) {
             .filter-form .col-auto {
                 width: 100%;
                 margin-bottom: 10px;
             }
-
-            .filter-form select,
-            .filter-form button {
+            .filter-form select, .filter-form button {
                 width: 100%;
             }
         }
@@ -449,8 +437,6 @@
             </div>
         </div>
 
-
-
         <!-- Expenses Table -->
         <div class="card">
             <div class="card-body">
@@ -533,7 +519,7 @@
                         <div class="mb-3">
                             <label class="form-label">Expense Type</label>
                             <select name="expense_type" id="editExpenseType" class="form-select" required
-                                onchange="toggleOtherType(this)">
+                                onchange="toggleOtherType(this, 'edit')">
                                 @foreach ($expenseTypes as $type)
                                     @if ($type != 'All Types')
                                         <option value="{{ $type }}">{{ $type }}</option>
@@ -541,10 +527,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        {{-- <div class="mb-3 other-type-input">
-                        <label class="form-label">Other Type</label>
-                        <input type="text" name="other_type" id="editOtherType" class="form-control">
-                    </div> --}}
                         <div class="mb-3 other-type-input" id="editOtherType">
                             <label class="form-label">Other Type</label>
                             <input type="text" name="other_type" id="editOtherTypeInput" class="form-control">
@@ -704,28 +686,15 @@
             }
         });
 
-        // Edit functionality
-        // function editCost(id, amount, details, expenseType) {
-        //     document.getElementById('editForm').action = `/costs/${id}`;
-        //     document.getElementById('editAmount').value = amount;
-        //     document.getElementById('editDetails').value = details;
-        //     document.getElementById('editExpenseType').value = expenseType;
-        //     toggleOtherType(document.getElementById('editExpenseType'));
-        // }
         const expenseTypes = {!! json_encode($expenseTypes) !!};
 
         // Remove "Other" from the array
         const filteredExpenseTypes = expenseTypes.filter(type => type !== "Other");
 
-        console.log(filteredExpenseTypes);
-
-
         function editCost(id, amount, details, expenseType) {
             document.getElementById('editForm').action = `/costs/${id}`;
             document.getElementById('editAmount').value = amount;
-            console.log(expenseType);
             if (expenseTypes.includes(expenseType)) {
-                console.log('hello');
                 document.getElementById('editExpenseType').value = expenseType;
                 document.getElementById('editOtherTypeInput').style.display = 'none';
                 document.getElementById('editOtherTypeInput').value = '';
@@ -734,7 +703,6 @@
                 document.getElementById('editOtherTypeInput').style.display = 'block';
                 document.getElementById('editOtherTypeInput').value = expenseType;
             }
-            //  document.getElementById('editOrderId').value = orderId || '';
             document.getElementById('editDetails').value = details;
             toggleOtherType(document.getElementById('editExpenseType'), 'edit');
         }
@@ -751,18 +719,6 @@
             }
         }
 
-        // function toggleOtherType(select) {
-        //     const otherTypeInput = select.closest('form').querySelector('.other-type-input');
-        //     const otherTypeField = select.closest('form').querySelector('[name="other_type"]');
-        //     if (select.value === 'Other') {
-        //         otherTypeInput.style.display = 'block';
-        //         otherTypeField.required = true;
-        //     } else {
-        //         otherTypeInput.style.display = 'none';
-        //         otherTypeField.required = false;
-        //     }
-        // }
-
         // Image Modal functionality
         function openImageModal(imageSrc, imageAlt) {
             const modalImage = document.getElementById('modalImage');
@@ -775,3 +731,4 @@
         }
     </script>
 @endsection
+

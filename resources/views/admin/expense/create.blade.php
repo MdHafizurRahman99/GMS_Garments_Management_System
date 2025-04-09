@@ -8,54 +8,70 @@
             border-collapse: collapse;
             margin-bottom: 1rem;
         }
+
         .expense-grid th {
             background-color: #f8f9fa;
             position: sticky;
             top: 0;
             z-index: 10;
         }
-        .expense-grid th, .expense-grid td {
+
+        .expense-grid th,
+        .expense-grid td {
             border: 1px solid #dee2e6;
             padding: 0.5rem;
         }
-        .expense-grid input, .expense-grid select {
+
+        .expense-grid input,
+        .expense-grid select {
             width: 100%;
             padding: 0.375rem;
             border: none;
             background: transparent;
         }
-        .expense-grid input:focus, .expense-grid select:focus {
+
+        .expense-grid input:focus,
+        .expense-grid select:focus {
             outline: 2px solid #0d6efd;
             border-radius: 2px;
         }
+
         .expense-grid tr:hover {
             background-color: #f8f9fa;
         }
+
         .file-preview {
             max-width: 50px;
             max-height: 50px;
             margin-right: 5px;
         }
+
         .image-preview-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .expense-grid th:first-child,
         .expense-grid td:first-child {
             width: 120px;
         }
+
         @media (max-width: 768px) {
             .expense-grid {
                 font-size: 0.875rem;
             }
-            .expense-grid th, .expense-grid td {
+
+            .expense-grid th,
+            .expense-grid td {
                 padding: 0.25rem;
             }
+
             .btn-group {
                 flex-direction: column;
                 align-items: stretch;
             }
+
             .btn-group .btn {
                 margin-bottom: 0.5rem;
             }
@@ -94,6 +110,9 @@
                             <th>Amount ($)</th>
                             <th>Type</th>
                             <th>Other Type</th>
+                            <th>Payment Method</th>
+                            <th>Customer</th>
+                            <th>Product</th>
                             <th>Details</th>
                             <th>Image</th>
                             <th>Actions</th>
@@ -120,6 +139,29 @@
                             <td>
                                 <input type="text" name="expenses[0][other_type]" class="form-control-plain other-type"
                                     style="display: none;">
+                            </td>
+                            <td>
+                                <select name="expenses[0][payment_method_id]" required class="form-select-plain">
+                                    @foreach ($paymentMethods as $method)
+                                        <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <select name="expenses[0][customer_id]" class="form-select-plain">
+                                    <option value="">Select Customer</option>
+                                    @foreach ($customers as $customer)
+                                        <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <select name="expenses[0][product_id]" class="form-select-plain">
+                                    <option value="">Select Product</option>
+                                    @foreach ($products as $product)
+                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                    @endforeach
+                                </select>
                             </td>
                             <td>
                                 <input type="text" name="expenses[0][details]" required class="form-control-plain">
@@ -152,34 +194,52 @@
             const newRow = document.createElement('tr');
             newRow.className = 'expense-row';
             newRow.innerHTML = `
-            <td>
-                <input type="date" name="expenses[${rowCount}][date]" required class="form-control-plain" value="${new Date().toISOString().split('T')[0]}">
-            </td>
-            <td>
-                <input type="number" name="expenses[${rowCount}][amount]" step="0.01" required class="form-control-plain">
-            </td>
-            <td>
-                <select name="expenses[${rowCount}][expense_type]" required class="form-select-plain" onchange="toggleOtherType(this)">
-                    ${Array.from(document.querySelector('select[name="expenses[0][expense_type]"]').options)
-                        .map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
-                </select>
-            </td>
-            <td>
-                <input type="text" name="expenses[${rowCount}][other_type]" class="form-control-plain other-type" style="display: none;">
-            </td>
-            <td>
-                <input type="text" name="expenses[${rowCount}][details]" required class="form-control-plain">
-            </td>
-            <td>
-                <div class="image-preview-container">
-                    <img class="file-preview" style="display: none;">
-                    <input type="file" name="expenses[${rowCount}][image]" accept="image/*" class="form-control-plain" onchange="previewImage(this)">
-                </div>
-            </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">Delete</button>
-            </td>
-        `;
+          <td>
+              <input type="date" name="expenses[${rowCount}][date]" required class="form-control-plain" value="${new Date().toISOString().split('T')[0]}">
+          </td>
+          <td>
+              <input type="number" name="expenses[${rowCount}][amount]" step="0.01" required class="form-control-plain">
+          </td>
+          <td>
+              <select name="expenses[${rowCount}][expense_type]" required class="form-select-plain" onchange="toggleOtherType(this)">
+                  ${Array.from(document.querySelector('select[name="expenses[0][expense_type]"]').options)
+                      .map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+              </select>
+          </td>
+          <td>
+              <input type="text" name="expenses[${rowCount}][other_type]" class="form-control-plain other-type" style="display: none;">
+          </td>
+          <td>
+              <select name="expenses[${rowCount}][payment_method_id]" required class="form-select-plain">
+                  ${Array.from(document.querySelector('select[name="expenses[0][payment_method_id]"]').options)
+                      .map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+              </select>
+          </td>
+          <td>
+              <select name="expenses[${rowCount}][customer_id]" class="form-select-plain">
+                  ${Array.from(document.querySelector('select[name="expenses[0][customer_id]"]').options)
+                      .map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+              </select>
+          </td>
+          <td>
+              <select name="expenses[${rowCount}][product_id]" class="form-select-plain">
+                  ${Array.from(document.querySelector('select[name="expenses[0][product_id]"]').options)
+                      .map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+              </select>
+          </td>
+          <td>
+              <input type="text" name="expenses[${rowCount}][details]" required class="form-control-plain">
+          </td>
+          <td>
+              <div class="image-preview-container">
+                  <img class="file-preview" style="display: none;">
+                  <input type="file" name="expenses[${rowCount}][image]" accept="image/*" class="form-control-plain" onchange="previewImage(this)">
+              </div>
+          </td>
+          <td>
+              <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">Delete</button>
+          </td>
+      `;
             tbody.appendChild(newRow);
             rowCount++;
         }
@@ -242,4 +302,3 @@
         });
     </script>
 @endsection
-
