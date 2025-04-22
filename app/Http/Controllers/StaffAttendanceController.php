@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use App\Models\StaffAttendance;
+use App\Models\StaffSchedule;
+use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,8 +33,9 @@ class StaffAttendanceController extends Controller
             Carbon::today();
 
         // Get attendance history with pagination
-        $attendanceHistory = StaffAttendance::where('staff_id', $staff->id)
-            ->when($request->has('filter_date'), function($query) use ($filterDate) {
+        $attendanceHistory = StaffAttendance::with(['schedule.shift'])
+            ->where('staff_id', $staff->id)
+            ->when($request->has('filter_date'), function ($query) use ($filterDate) {
                 return $query->whereDate('date', $filterDate);
             })
             ->orderBy('date', 'desc')
@@ -42,6 +45,42 @@ class StaffAttendanceController extends Controller
         $todayAttendance = StaffAttendance::where('staff_id', $staff->id)
             ->whereDate('date', Carbon::today())
             ->first();
+
+        // Get available schedules for today
+        $today = Carbon::now();
+        $dayOfWeek = $today->format('D');
+        $today = Carbon::today('Asia/Dhaka')->toDateString(); // e.g., "2025-04-22"
+
+        $schedules = StaffSchedule::with('shift')
+            ->where('staff_id', $staff->id)
+            ->get();
+
+        // Filter schedules in PHP
+        $availableSchedules = $schedules->filter(function ($schedule) use ($today, $dayOfWeek) {
+
+            // Convert start_date and end_date from DD-MM-YYYY to YYYY-MM-DD
+            $startDate = \Carbon\Carbon::createFromFormat('d/m/Y', $schedule->start_date)->format('Y-m-d');
+            $endDate = $schedule->end_date ? \Carbon\Carbon::createFromFormat('d/m/Y', $schedule->end_date)->format('Y-m-d') : null;
+            // dd($startDate, $endDate);
+            // Check date range and day of the week
+            return $startDate <= $today &&
+                ($endDate >= $today || $endDate === null) &&
+                in_array($dayOfWeek, json_decode($schedule->days));
+        });
+
+        // return $availableSchedules;
+        // Check if the staff has any schedules for today
+        // Filter out schedules that are already checked in but not checked out
+        $usedScheduleIds = StaffAttendance::where('staff_id', $staff->id)
+            ->whereDate('date', Carbon::today())
+            ->whereNotNull('check_in')
+            ->whereNull('check_out')
+            ->pluck('schedule_id')
+            ->toArray();
+
+        $availableSchedules = $availableSchedules->filter(function ($schedule) use ($usedScheduleIds) {
+            return !in_array($schedule->id, $usedScheduleIds);
+        });
 
         // Calculate attendance summary
         $lastMonthStart = Carbon::today()->subMonth()->startOfMonth();
@@ -73,6 +112,7 @@ class StaffAttendanceController extends Controller
         return view('admin.attendance.index', [
             'attendanceHistory' => $attendanceHistory,
             'todayAttendance' => $todayAttendance,
+            'availableSchedules' => $availableSchedules,
             'onTimeCount' => $onTimeCount,
             'lateCount' => $lateCount,
             'avgCheckIn' => $avgCheckIn ? $avgCheckIn->avg_check_in : 'N/A',
@@ -86,6 +126,10 @@ class StaffAttendanceController extends Controller
      */
     public function checkIn(Request $request)
     {
+        $request->validate([
+            'schedule_id' => 'required|exists:staff_schedules,id',
+        ]);
+
         $userId = Auth::id();
         $staff = Staff::where('user_id', $userId)->first();
 
@@ -95,6 +139,21 @@ class StaffAttendanceController extends Controller
 
         $today = Carbon::today();
         $now = Carbon::now();
+
+        // Get the selected schedule
+        $schedule = StaffSchedule::with('shift')->findOrFail($request->schedule_id);
+
+        // Check if this schedule is already in use for today
+        $existingAttendance = StaffAttendance::where('staff_id', $staff->id)
+            ->where('schedule_id', $schedule->id)
+            ->whereDate('date', $today)
+            ->whereNotNull('check_in')
+            ->whereNull('check_out')
+            ->first();
+
+        if ($existingAttendance) {
+            return redirect()->back()->with('error', 'This schedule is already checked in. Please check out first.');
+        }
 
         // Check if an attendance record already exists for today
         $attendance = StaffAttendance::firstOrNew([
@@ -107,11 +166,12 @@ class StaffAttendanceController extends Controller
             return redirect()->back()->with('error', 'You have already checked in today.');
         }
 
-        // Determine if the check-in is late (after 9:00 AM)
-        $standardCheckIn = Carbon::today()->setTime(9, 0, 0);
-        $status = $now->gt($standardCheckIn) ? 'late' : 'present';
+        // Determine if the check-in is late (after shift start time)
+        $shiftStart = Carbon::parse($schedule->shift->start_time);
+        $status = $now->format('H:i:s') > $shiftStart->format('H:i:s') ? 'late' : 'present';
 
         // Record check-in
+        $attendance->schedule_id = $schedule->id;
         $attendance->check_in = $now->format('H:i:s');
         $attendance->status = $status;
         $attendance->save();
@@ -135,7 +195,8 @@ class StaffAttendanceController extends Controller
         $now = Carbon::now();
 
         // Find today's attendance record
-        $attendance = StaffAttendance::where('staff_id', $staff->id)
+        $attendance = StaffAttendance::with('schedule.shift')
+            ->where('staff_id', $staff->id)
             ->whereDate('date', $today)
             ->first();
 
@@ -149,11 +210,44 @@ class StaffAttendanceController extends Controller
             return redirect()->back()->with('error', 'You have already checked out today.');
         }
 
-        // Record check-out
-        $attendance->check_out = $now->format('H:i:s');
+        // Check if checkout time is after shift end time
+        $shiftEnd = Carbon::parse($attendance->schedule->shift->end_time);
+        $isOvertime = $now->format('H:i:s') > $shiftEnd->format('H:i:s');
+
+        // If it's overtime and user hasn't confirmed yet, return the confirmation view
+        if ($isOvertime && !$request->has('overtime_confirmed')) {
+            return view('admin.attendance.overtime-confirm', [
+                'attendance' => $attendance,
+                'currentTime' => $now->format('H:i:s'),
+                'shiftEndTime' => $shiftEnd->format('H:i:s'),
+            ]);
+        }
+
+        // Process checkout based on user's overtime choice
+        if ($request->has('overtime_choice')) {
+            if ($request->overtime_choice === 'overtime') {
+                // Record actual checkout time with overtime
+                $attendance->check_out = $now->format('H:i:s');
+                $attendance->is_overtime = true;
+                $attendance->overtime_status = 'pending';
+                $attendance->notes = $request->notes ?? $attendance->notes;
+            } else {
+                // Record checkout at shift end time
+                $attendance->check_out = $shiftEnd->format('H:i:s');
+                $attendance->is_overtime = false;
+            }
+        } else {
+            // Normal checkout (not overtime)
+            $attendance->check_out = $now->format('H:i:s');
+            $attendance->is_overtime = $isOvertime;
+            if ($isOvertime) {
+                $attendance->overtime_status = 'pending';
+            }
+        }
+
         $attendance->save();
 
-        return redirect()->back()->with('message', 'Check-out recorded successfully.');
+        return redirect()->route('attendance.index')->with('message', 'Check-out recorded successfully.');
     }
 
     /**
@@ -167,17 +261,32 @@ class StaffAttendanceController extends Controller
             Carbon::today();
 
         $staffId = $request->input('staff_id');
+        $overtimeFilter = $request->input('overtime_filter');
 
         // Get all staff
         $allStaff = Staff::select('id', 'first_name', 'last_name')->get();
 
         // Get attendance records with filters
-        $attendanceQuery = StaffAttendance::with('staff')
-            ->when($request->has('filter_date'), function($query) use ($filterDate) {
+        $attendanceQuery = StaffAttendance::with(['staff', 'schedule.shift'])
+            ->when($request->has('filter_date'), function ($query) use ($filterDate) {
                 return $query->whereDate('date', $filterDate);
             })
-            ->when($staffId, function($query) use ($staffId) {
+            ->when($staffId, function ($query) use ($staffId) {
                 return $query->where('staff_id', $staffId);
+            })
+            ->when($overtimeFilter, function ($query) use ($overtimeFilter) {
+                if ($overtimeFilter === 'pending') {
+                    return $query->where('is_overtime', true)
+                        ->where('overtime_status', 'pending');
+                } elseif ($overtimeFilter === 'approved') {
+                    return $query->where('is_overtime', true)
+                        ->where('overtime_status', 'approved');
+                } elseif ($overtimeFilter === 'rejected') {
+                    return $query->where('is_overtime', true)
+                        ->where('overtime_status', 'rejected');
+                } elseif ($overtimeFilter === 'all_overtime') {
+                    return $query->where('is_overtime', true);
+                }
             })
             ->orderBy('date', 'desc');
 
@@ -188,6 +297,7 @@ class StaffAttendanceController extends Controller
             'allStaff' => $allStaff,
             'filterDate' => $filterDate->format('Y-m-d'),
             'selectedStaffId' => $staffId,
+            'overtimeFilter' => $overtimeFilter,
         ]);
     }
 
@@ -198,10 +308,13 @@ class StaffAttendanceController extends Controller
     {
         $request->validate([
             'staff_id' => 'required|exists:staff,id',
+            'schedule_id' => 'required|exists:staff_schedules,id',
             'date' => 'required|date',
             'check_in' => 'nullable|date_format:H:i',
             'check_out' => 'nullable|date_format:H:i',
             'status' => 'required|in:present,absent,late',
+            'is_overtime' => 'nullable|boolean',
+            'overtime_status' => 'nullable|in:pending,approved,rejected',
             'notes' => 'nullable|string',
         ]);
 
@@ -216,14 +329,44 @@ class StaffAttendanceController extends Controller
                 'date' => $request->date,
             ],
             [
+                'schedule_id' => $request->schedule_id,
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'status' => $request->status,
+                'is_overtime' => $request->is_overtime ?? false,
+                'overtime_status' => $request->overtime_status,
                 'notes' => $request->notes,
             ]
         );
 
         return redirect()->route('attendance.admin')->with('message', 'Attendance record saved successfully.');
+    }
+
+    /**
+     * Admin function to approve or reject overtime.
+     */
+    public function updateOvertimeStatus(Request $request, $id)
+    {
+        $request->validate([
+            'overtime_status' => 'required|in:approved,rejected',
+            'notes' => 'nullable|string',
+        ]);
+
+        $attendance = StaffAttendance::findOrFail($id);
+
+        if (!$attendance->is_overtime) {
+            return redirect()->back()->with('error', 'This attendance record does not have overtime.');
+        }
+
+        $attendance->overtime_status = $request->overtime_status;
+
+        if ($request->notes) {
+            $attendance->notes = $request->notes;
+        }
+
+        $attendance->save();
+
+        return redirect()->back()->with('message', 'Overtime status updated successfully.');
     }
 
     /**

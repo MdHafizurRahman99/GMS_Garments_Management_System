@@ -12,10 +12,13 @@ class StaffAttendance extends Model
 
     protected $fillable = [
         'staff_id',
+        'schedule_id',
         'date',
         'check_in',
         'check_out',
         'status',
+        'is_overtime',
+        'overtime_status',
         'notes',
     ];
 
@@ -23,6 +26,7 @@ class StaffAttendance extends Model
         'date' => 'date',
         'check_in' => 'datetime',
         'check_out' => 'datetime',
+        'is_overtime' => 'boolean',
     ];
 
     /**
@@ -31,6 +35,14 @@ class StaffAttendance extends Model
     public function staff()
     {
         return $this->belongsTo(Staff::class);
+    }
+
+    /**
+     * Get the schedule associated with this attendance.
+     */
+    public function schedule()
+    {
+        return $this->belongsTo(StaffSchedule::class, 'schedule_id');
     }
 
     /**
@@ -70,14 +82,49 @@ class StaffAttendance extends Model
      */
     public function getIsLateAttribute()
     {
-        if (!$this->check_in) {
+        if (!$this->check_in || !$this->schedule) {
             return false;
         }
 
-        // Assuming 9:00 AM is the standard check-in time
-        $standardCheckIn = Carbon::parse($this->date)->setTime(9, 0, 0);
+        $scheduleStart = Carbon::parse($this->schedule->shift->start_time);
         $actualCheckIn = Carbon::parse($this->check_in);
 
-        return $actualCheckIn->gt($standardCheckIn);
+        return $actualCheckIn->gt($scheduleStart);
+    }
+
+    /**
+     * Get the overtime duration in minutes.
+     */
+    public function getOvertimeDurationAttribute()
+    {
+        if (!$this->is_overtime || !$this->check_out || !$this->schedule) {
+            return 0;
+        }
+
+        $scheduleEnd = Carbon::parse($this->schedule->shift->end_time);
+        $actualCheckOut = Carbon::parse($this->check_out);
+
+        if ($actualCheckOut->gt($scheduleEnd)) {
+            return $actualCheckOut->diffInMinutes($scheduleEnd);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Format overtime duration as hours and minutes.
+     */
+    public function getFormattedOvertimeDurationAttribute()
+    {
+        $duration = $this->getOvertimeDurationAttribute();
+
+        if ($duration === 0) {
+            return '00:00';
+        }
+
+        $hours = floor($duration / 60);
+        $minutes = $duration % 60;
+
+        return sprintf('%02d:%02d', $hours, $minutes);
     }
 }

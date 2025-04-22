@@ -84,6 +84,57 @@
             margin-bottom: 20px;
         }
 
+        .schedule-item {
+            border: 1px solid #e3e6f0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .schedule-item:hover {
+            background-color: #f8f9fc;
+        }
+
+        .schedule-item.selected {
+            background-color: #4e73df;
+            color: white;
+            border-color: #4e73df;
+        }
+
+        .schedule-time {
+            font-weight: bold;
+        }
+
+        .overtime-badge {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            margin-left: 5px;
+        }
+
+        .overtime-pending {
+            background-color: #f6c23e;
+            color: #fff;
+        }
+
+        .overtime-approved {
+            background-color: #1cc88a;
+            color: #fff;
+        }
+
+        .overtime-rejected {
+            background-color: #e74a3b;
+            color: #fff;
+        }
+
         @media (max-width: 768px) {
             .attendance-container {
                 flex-direction: column;
@@ -138,20 +189,41 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
+                                    <th>Shift</th>
                                     <th>Check In</th>
                                     <th>Check Out</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($attendanceHistory as $record)
                                     <tr>
                                         <td>{{ \Carbon\Carbon::parse($record->date)->format('Y-m-d') }}</td>
+                                        <td>
+                                            @if ($record->schedule)
+                                                {{ $record->schedule->shift->shift_name }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
                                         <td>{{ $record->check_in ? \Carbon\Carbon::parse($record->check_in)->format('H:i:s A') : 'N/A' }}</td>
-                                        <td>{{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('H:i:s A') : 'N/A' }}</td>
+                                        <td>
+                                            {{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('H:i:s A') : 'N/A' }}
+                                            @if ($record->is_overtime)
+                                                <span class="overtime-badge overtime-{{ $record->overtime_status }}">
+                                                    {{ ucfirst($record->overtime_status) }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ $record->status == 'present' ? 'success' : ($record->status == 'late' ? 'warning' : 'danger') }}">
+                                                {{ ucfirst($record->status) }}
+                                            </span>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center">No attendance records found</td>
+                                        <td colspan="5" class="text-center">No attendance records found</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -203,21 +275,59 @@
                             {{ \Carbon\Carbon::now()->format('l, F jS, Y') }}
                         </div>
 
-                        <div class="attendance-buttons">
-                            <form action="{{ route('attendance.check-in') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-dark" {{ $todayAttendance && $todayAttendance->check_in ? 'disabled' : '' }}>
-                                    <i class="fa fa-clock-o"></i> Check In
-                                </button>
-                            </form>
+                        @if ($todayAttendance && $todayAttendance->check_in && !$todayAttendance->check_out)
+                            <!-- Already checked in, show check-out button -->
+                            <div class="alert alert-info">
+                                <p>You checked in at {{ \Carbon\Carbon::parse($todayAttendance->check_in)->format('h:i A') }}
+                                for shift {{ $todayAttendance->schedule->shift->shift_name }}</p>
+                            </div>
 
                             <form action="{{ route('attendance.check-out') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn btn-dark" {{ !$todayAttendance || !$todayAttendance->check_in || $todayAttendance->check_out ? 'disabled' : '' }}>
+                                <button type="submit" class="btn btn-dark btn-block">
                                     <i class="fa fa-clock-o"></i> Check Out
                                 </button>
                             </form>
-                        </div>
+                        @elseif ($todayAttendance && $todayAttendance->check_in && $todayAttendance->check_out)
+                            <!-- Already checked out -->
+                            <div class="alert alert-success">
+                                <p>You have completed your attendance for today.</p>
+                                <p>Check-in: {{ \Carbon\Carbon::parse($todayAttendance->check_in)->format('h:i A') }}</p>
+                                <p>Check-out: {{ \Carbon\Carbon::parse($todayAttendance->check_out)->format('h:i A') }}</p>
+                                <p>Shift: {{ $todayAttendance->schedule->shift->shift_name }}</p>
+                            </div>
+                        @else
+                            <!-- Not checked in yet, show schedule selection and check-in button -->
+                            <form action="{{ route('attendance.check-in') }}" method="POST">
+                                @csrf
+                                <div class="form-group">
+                                    <label for="schedule_id">Select Schedule:</label>
+
+                                    @if ($availableSchedules->count() > 0)
+                                        <div class="schedule-selection">
+                                            @foreach ($availableSchedules as $schedule)
+                                                <div class="schedule-item" onclick="selectSchedule(this, {{ $schedule->id }})">
+                                                    <div class="schedule-time">{{ $schedule->shift->shift_name }}</div>
+                                                    <div class="schedule-details">
+                                                        {{ \Carbon\Carbon::parse($schedule->shift->start_time)->format('h:i A') }} -
+                                                        {{ \Carbon\Carbon::parse($schedule->shift->end_time)->format('h:i A') }}
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <input type="hidden" name="schedule_id" id="selected_schedule_id" required>
+
+                                        <button type="submit" class="btn btn-dark btn-block mt-3" id="check_in_btn" disabled>
+                                            <i class="fa fa-clock-o"></i> Check In
+                                        </button>
+                                    @else
+                                        <div class="alert alert-warning">
+                                            No available schedules for today. Please contact your administrator.
+                                        </div>
+                                    @endif
+                                </div>
+                            </form>
+                        @endif
                     </div>
 
                     <!-- Attendance Summary Card -->
@@ -278,6 +388,23 @@
             document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
 
             setTimeout(updateClock, 1000);
+        }
+
+        // Schedule selection
+        function selectSchedule(element, scheduleId) {
+            // Remove selected class from all items
+            document.querySelectorAll('.schedule-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Add selected class to clicked item
+            element.classList.add('selected');
+
+            // Set the selected schedule ID
+            document.getElementById('selected_schedule_id').value = scheduleId;
+
+            // Enable the check-in button
+            document.getElementById('check_in_btn').disabled = false;
         }
 
         // Start the clock when the page loads

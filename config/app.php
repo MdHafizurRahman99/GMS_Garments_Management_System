@@ -70,7 +70,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // 'timezone' => 'UTC',
+    // 'timezone' => 'Australia/Sydney',
+    'timezone' => 'Asia/Dhaka',
 
     /*
     |--------------------------------------------------------------------------
