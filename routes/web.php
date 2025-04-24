@@ -24,6 +24,7 @@ use App\Http\Controllers\TryTestController;
 use App\Http\Controllers\UserProfileController;
 use App\Models\Cost;
 use App\Models\StaffSchedule;
+use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -189,7 +190,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/attendance', [StaffAttendanceController::class, 'adminIndex'])->name('attendance.admin');
     Route::post('/admin/attendance', [StaffAttendanceController::class, 'store'])->name('attendance.store');
     Route::delete('/admin/attendance/{id}', [StaffAttendanceController::class, 'destroy'])->name('attendance.destroy');
+    Route::post('/admin/attendance/overtime/{id}', [StaffAttendanceController::class, 'updateOvertimeStatus'])->name('attendance.update-overtime');
 
+    // API routes for AJAX
+    Route::get('/api/staff-schedules', function (Request $request) {
+        $staffId = $request->input('staff_id');
+        $schedules = StaffSchedule::with('shift')
+            ->where('staff_id', $staffId)
+            ->get();
+
+        return response()->json(['schedules' => $schedules]);
+    });
 
     // Route::get('staff/create', [StaffController::class, 'create'])->name('staff.create');
     Route::get('staff/create', [StaffController::class, 'create'])->name('staff.create')->middleware('permission:staff.add');

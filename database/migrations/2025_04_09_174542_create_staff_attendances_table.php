@@ -24,8 +24,8 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            // Unique constraint to prevent duplicate entries for the same staff on the same day
-            $table->unique(['staff_id', 'date']);
+            // Remove the unique constraint to allow multiple entries per day
+            // $table->unique(['staff_id', 'date']);
         });
     }
 

@@ -135,6 +135,26 @@
             color: #fff;
         }
 
+        .today-attendance-list {
+            margin-top: 15px;
+        }
+
+        .today-attendance-item {
+            padding: 10px;
+            border: 1px solid #e3e6f0;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #f8f9fc;
+        }
+
+        .today-attendance-item.incomplete {
+            border-left: 4px solid #f6c23e;
+        }
+
+        .today-attendance-item.complete {
+            border-left: 4px solid #1cc88a;
+        }
+
         @media (max-width: 768px) {
             .attendance-container {
                 flex-direction: column;
@@ -268,18 +288,42 @@
                         <h2>Today's Attendance</h2>
 
                         <div class="current-time" id="current-time">
-                            {{ \Carbon\Carbon::now()->format('H:i:s') }}
+                            {{ \Carbon\Carbon::now('Asia/Dhaka')->format('H:i:s') }}
                         </div>
 
                         <div class="current-date">
-                            {{ \Carbon\Carbon::now()->format('l, F jS, Y') }}
+                            {{ \Carbon\Carbon::now('Asia/Dhaka')->format('l, F jS, Y') }}
                         </div>
 
-                        @if ($todayAttendance && $todayAttendance->check_in && !$todayAttendance->check_out)
+                        <!-- Today's attendance records -->
+                        @if($todayAttendances->count() > 0)
+                            <h5>Today's Records:</h5>
+                            <div class="today-attendance-list">
+                                @foreach($todayAttendances as $record)
+                                    <div class="today-attendance-item {{ $record->check_out ? 'complete' : 'incomplete' }}">
+                                        <div><strong>Shift:</strong> {{ $record->schedule->shift->shift_name }}</div>
+                                        <div><strong>Check In:</strong> {{ \Carbon\Carbon::parse($record->check_in)->format('h:i A') }}</div>
+                                        <div><strong>Check Out:</strong> {{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('h:i A') : 'Not checked out' }}</div>
+                                        <div>
+                                            <strong>Status:</strong>
+                                            <span class="badge badge-{{ $record->status == 'present' ? 'success' : ($record->status == 'late' ? 'warning' : 'danger') }}">
+                                                {{ ucfirst($record->status) }}
+                                            </span>
+                                            @if ($record->is_overtime)
+                                                <span class="overtime-badge overtime-{{ $record->overtime_status }}">
+                                                    Overtime: {{ ucfirst($record->overtime_status) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if ($incompleteAttendance)
                             <!-- Already checked in, show check-out button -->
-                            <div class="alert alert-info">
-                                <p>You checked in at {{ \Carbon\Carbon::parse($todayAttendance->check_in)->format('h:i A') }}
-                                for shift {{ $todayAttendance->schedule->shift->shift_name }}</p>
+                            <div class="alert alert-info mt-3">
+                                <p>You have an incomplete check-out for shift {{ $incompleteAttendance->schedule->shift->shift_name }}</p>
                             </div>
 
                             <form action="{{ route('attendance.check-out') }}" method="POST">
@@ -288,20 +332,12 @@
                                     <i class="fa fa-clock-o"></i> Check Out
                                 </button>
                             </form>
-                        @elseif ($todayAttendance && $todayAttendance->check_in && $todayAttendance->check_out)
-                            <!-- Already checked out -->
-                            <div class="alert alert-success">
-                                <p>You have completed your attendance for today.</p>
-                                <p>Check-in: {{ \Carbon\Carbon::parse($todayAttendance->check_in)->format('h:i A') }}</p>
-                                <p>Check-out: {{ \Carbon\Carbon::parse($todayAttendance->check_out)->format('h:i A') }}</p>
-                                <p>Shift: {{ $todayAttendance->schedule->shift->shift_name }}</p>
-                            </div>
                         @else
-                            <!-- Not checked in yet, show schedule selection and check-in button -->
-                            <form action="{{ route('attendance.check-in') }}" method="POST">
+                            <!-- Not checked in or all check-ins are complete, show schedule selection and check-in button -->
+                            <form action="{{ route('attendance.check-in') }}" method="POST" class="mt-3">
                                 @csrf
                                 <div class="form-group">
-                                    <label for="schedule_id">Select Schedule:</label>
+                                    <label for="schedule_id">Select Schedule for Check-In:</label>
 
                                     @if ($availableSchedules->count() > 0)
                                         <div class="schedule-selection">
