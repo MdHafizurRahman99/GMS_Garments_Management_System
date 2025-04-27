@@ -357,4 +357,18 @@ class StaffScheduleController extends Controller
 
         return response()->json(['data' => $schedule]);
     }
+
+        /**
+     * Get schedule data by ID.
+     */
+    public function getScheduleDataById(Request $request)
+    {
+        $scheduleId = $request->input('schedule_id');
+
+        $schedule = StaffSchedule::with(['staff', 'shift'])
+            ->where('id', $scheduleId)
+            ->first();
+
+        return response()->json(['data' => $schedule]);
+    }
 }

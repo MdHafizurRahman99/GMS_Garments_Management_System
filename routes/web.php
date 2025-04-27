@@ -233,6 +233,8 @@ Route::middleware('auth')->group(function () {
     Route::post('staffschedule/update', [StaffScheduleController::class, 'update'])->name('staffschedule.update')->middleware('permission:staffschedule.edit');
     Route::get('staffschedule/index', [StaffScheduleController::class, 'index'])->name('staffschedule.index')->middleware('permission:staffschedule.view');
     Route::post('staffschedule/destroy/{id}', [StaffScheduleController::class, 'destroy'])->name('staffschedule.destroy')->middleware('permission:staffschedule.delete');
+
+    Route::get('/get-schedule-data-by-id', [StaffScheduleController::class, 'getScheduleDataById'])->name('get.schedule.data.by.id');
 });
 
 // use for test

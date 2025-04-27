@@ -185,8 +185,7 @@
                                                         <h2>
                                                             <button data-toggle="modal" data-target="#edit_schedule"
                                                                 class="btn-primary edit-schedule"
-                                                                data-staff-id="{{ $schedule->staff_id }}"
-                                                                data-shift-id="{{ $schedule->shift_id }}">
+                                                                data-schedule-id="{{ $schedule->id }}">
                                                                 <span class="username-info m-b-10">{{ $schedule->shift->shift_name }}</span>
                                                             </button>
                                                         </h2>
@@ -506,16 +505,14 @@
             var userRole = "{{ Auth::user()->role }}";
             console.log(userRole);
             $('.edit-schedule').on('click', function() {
-                var staffId = $(this).data('staff-id');
-                var shiftId = $(this).data('shift-id');
+                var scheduleId = $(this).data('schedule-id');
 
                 // AJAX request to fetch schedule data
                 $.ajax({
-                    url: '/get-schedule-data',
+                    url: '/get-schedule-data-by-id',
                     method: 'GET',
                     data: {
-                        staff_id: staffId,
-                        shift_id: shiftId
+                        schedule_id: scheduleId
                     },
                     success: function(response) {
                         var scheduleData = response.data;
