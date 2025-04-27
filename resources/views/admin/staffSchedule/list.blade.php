@@ -108,45 +108,19 @@
                         </div>
                     @endif
                 </div>
-                    @php
-                            // Group schedules by staff
-                            $staffSchedules = [];
-                            foreach ($schedules as $schedule) {
-                                if (!isset($staffSchedules[$schedule->staff_id])) {
-                                    $staffSchedules[$schedule->staff_id] = [
-                                        'staff' => $schedule->staff,
-                                        'schedules' => []
-                                    ];
-                                }
-                                $staffSchedules[$schedule->staff_id]['schedules'][] = $schedule;
-                            }
-                        @endphp
-                {{-- <div class="card-header py-3">
-                    <div class="alert alert-info">
-                        <p><strong>Debug Info:</strong></p>
-                        <p>Week: {{ $weekStart }} to {{ $weekEnd }}</p>
-                        <p>Total Schedules: {{ count($schedules) }}</p>
-                        @php
-                            // Group schedules by staff
-                            $staffSchedules = [];
-                            foreach ($schedules as $schedule) {
-                                if (!isset($staffSchedules[$schedule->staff_id])) {
-                                    $staffSchedules[$schedule->staff_id] = [
-                                        'staff' => $schedule->staff,
-                                        'schedules' => []
-                                    ];
-                                }
-                                $staffSchedules[$schedule->staff_id]['schedules'][] = $schedule;
-                            }
-                        @endphp
-                        <p>Staff with Schedules: {{ count($staffSchedules) }}</p>
-                        @foreach($schedules as $schedule)
-                            <p>Schedule: Staff {{ $schedule->staff_id }}, Shift {{ $schedule->shift_id }},
-                               {{ $schedule->start_date }} to {{ $schedule->end_date }},
-                               Days: {{ $schedule->days }}</p>
-                        @endforeach
-                    </div>
-                </div> --}}
+                @php
+                // Group schedules by staff
+                $staffSchedules = [];
+                foreach ($schedules as $schedule) {
+                    if (!isset($staffSchedules[$schedule->staff_id])) {
+                        $staffSchedules[$schedule->staff_id] = [
+                            'staff' => $schedule->staff,
+                            'schedules' => []
+                        ];
+                    }
+                    $staffSchedules[$schedule->staff_id]['schedules'][] = $schedule;
+                }
+            @endphp
                 <div class="card-body">
 
                     <div class="table-responsive">
@@ -209,10 +183,10 @@
                                                 @foreach ($shiftsForDay as $schedule)
                                                     <div class="user-add-shedule-list mb-1">
                                                         <h2>
-                                                            <input type="hidden" name="staff_id" value="{{ $schedule->staff_id }}">
-                                                            <input type="hidden" name="shift_id" value="{{ $schedule->shift_id }}">
                                                             <button data-toggle="modal" data-target="#edit_schedule"
-                                                                class="btn-primary edit-schedule">
+                                                                class="btn-primary edit-schedule"
+                                                                data-staff-id="{{ $schedule->staff_id }}"
+                                                                data-shift-id="{{ $schedule->shift_id }}">
                                                                 <span class="username-info m-b-10">{{ $schedule->shift->shift_name }}</span>
                                                             </button>
                                                         </h2>
@@ -532,8 +506,8 @@
             var userRole = "{{ Auth::user()->role }}";
             console.log(userRole);
             $('.edit-schedule').on('click', function() {
-                var staffId = $(this).closest('td').find('input[name="staff_id"]').val();
-                var shiftId = $(this).closest('td').find('input[name="shift_id"]').val();
+                var staffId = $(this).data('staff-id');
+                var shiftId = $(this).data('shift-id');
 
                 // AJAX request to fetch schedule data
                 $.ajax({

@@ -165,6 +165,29 @@
                 width: 100%;
             }
         }
+
+        .attendance-record-item {
+            padding: 8px 0;
+        }
+
+        .attendance-divider {
+            margin: 8px 0;
+            border-top: 1px dashed #e3e6f0;
+        }
+
+        .schedule-item.completed {
+            background-color: #f8f9fc;
+            border-left: 4px solid #1cc88a;
+        }
+
+        .schedule-item.in-progress {
+            background-color: #fff3cd;
+            border-left: 4px solid #f6c23e;
+        }
+
+        .schedule-status {
+            margin-top: 5px;
+        }
     </style>
 @endsection
 
@@ -299,22 +322,35 @@
                         @if($todayAttendances->count() > 0)
                             <h5>Today's Records:</h5>
                             <div class="today-attendance-list">
-                                @foreach($todayAttendances as $record)
-                                    <div class="today-attendance-item {{ $record->check_out ? 'complete' : 'incomplete' }}">
-                                        <div><strong>Shift:</strong> {{ $record->schedule->shift->shift_name }}</div>
-                                        <div><strong>Check In:</strong> {{ \Carbon\Carbon::parse($record->check_in)->format('h:i A') }}</div>
-                                        <div><strong>Check Out:</strong> {{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('h:i A') : 'Not checked out' }}</div>
-                                        <div>
-                                            <strong>Status:</strong>
-                                            <span class="badge badge-{{ $record->status == 'present' ? 'success' : ($record->status == 'late' ? 'warning' : 'danger') }}">
-                                                {{ ucfirst($record->status) }}
-                                            </span>
-                                            @if ($record->is_overtime)
-                                                <span class="overtime-badge overtime-{{ $record->overtime_status }}">
-                                                    Overtime: {{ ucfirst($record->overtime_status) }}
-                                                </span>
+                                @foreach($todayAttendances->groupBy('schedule_id') as $scheduleId => $records)
+                                    @php
+                                        $schedule = $records->first()->schedule;
+                                        $hasIncomplete = $records->contains(function($record) {
+                                            return $record->check_in && !$record->check_out;
+                                        });
+                                    @endphp
+                                    <div class="today-attendance-item {{ $hasIncomplete ? 'incomplete' : 'complete' }}">
+                                        <div><strong>Shift:</strong> {{ $schedule->shift->shift_name }}</div>
+                                        @foreach($records as $record)
+                                            <div class="attendance-record-item">
+                                                <div><strong>Check In:</strong> {{ \Carbon\Carbon::parse($record->check_in)->format('h:i A') }}</div>
+                                                <div><strong>Check Out:</strong> {{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('h:i A') : 'Not checked out' }}</div>
+                                                <div>
+                                                    <strong>Status:</strong>
+                                                    <span class="badge badge-{{ $record->status == 'present' ? 'success' : ($record->status == 'late' ? 'warning' : 'danger') }}">
+                                                        {{ ucfirst($record->status) }}
+                                                    </span>
+                                                    @if ($record->is_overtime)
+                                                        <span class="overtime-badge overtime-{{ $record->overtime_status }}">
+                                                            Overtime: {{ ucfirst($record->overtime_status) }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            @if(!$loop->last)
+                                                <hr class="attendance-divider">
                                             @endif
-                                        </div>
+                                        @endforeach
                                     </div>
                                 @endforeach
                             </div>
@@ -342,12 +378,29 @@
                                     @if ($availableSchedules->count() > 0)
                                         <div class="schedule-selection">
                                             @foreach ($availableSchedules as $schedule)
-                                                <div class="schedule-item" onclick="selectSchedule(this, {{ $schedule->id }})">
+                                                @php
+                                                    $alreadyCompleted = $todayAttendances->contains(function($record) use ($schedule) {
+                                                        return $record->schedule_id == $schedule->id && $record->check_in && $record->check_out;
+                                                    });
+
+                                                    $hasIncomplete = $todayAttendances->contains(function($record) use ($schedule) {
+                                                        return $record->schedule_id == $schedule->id && $record->check_in && !$record->check_out;
+                                                    });
+                                                @endphp
+
+                                                <div class="schedule-item {{ $alreadyCompleted ? 'completed' : ($hasIncomplete ? 'in-progress' : '') }}"
+                                                     onclick="{{ $alreadyCompleted || $hasIncomplete ? '' : 'selectSchedule(this, ' . $schedule->id . ')' }}"
+                                                     style="{{ $alreadyCompleted ? 'opacity: 0.6; cursor: not-allowed;' : ($hasIncomplete ? 'background-color: #fff3cd; cursor: not-allowed;' : '') }}">
                                                     <div class="schedule-time">{{ $schedule->shift->shift_name }}</div>
                                                     <div class="schedule-details">
                                                         {{ \Carbon\Carbon::parse($schedule->shift->start_time)->format('h:i A') }} -
                                                         {{ \Carbon\Carbon::parse($schedule->shift->end_time)->format('h:i A') }}
                                                     </div>
+                                                    @if($alreadyCompleted)
+                                                        <div class="schedule-status"><span class="badge badge-success">Completed</span></div>
+                                                    @elseif($hasIncomplete)
+                                                        <div class="schedule-status"><span class="badge badge-warning">In Progress</span></div>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
