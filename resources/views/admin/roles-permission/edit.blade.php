@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('title')
-    Edit Permission
+    Edit Role Permissions
 @endsection
 
 @section('css')
@@ -35,8 +35,8 @@
                             {{ 'There is invalid information in Form Data' }}
                         </div>
                     @endif
-                    <h3 class="heading">Edit Permission </h3>
-                    {{-- <p>Edit Permissions </p> --}}
+                    <h3 class="heading">Edit Role Permissions </h3>
+                    {{-- <p>Edit Role Permissions </p> --}}
                 </div>
                 <form class="form-register" id="myForm"
                     action="{{ route('roles-permission.update', ['roles_permission' => $role_id]) }}" method="post">

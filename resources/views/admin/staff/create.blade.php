@@ -10,7 +10,6 @@
     <script src="{{ asset('js/abn/json.js') }}"></script>
     <script src="{{ asset('js/abnlookup-sample.js') }}"></script>
     {{-- for abn end --}}
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
@@ -60,22 +59,6 @@
                                 <div class="tab-pane active" role="tabpanel" id="step1">
                                     <h4 class="text-center">Employee or Contractor Details </h4>
                                     <div class="row">
-                                        {{-- <div class="form-group col-md-6">
-                                            <label for="first_name">First Name</label>
-                                            <input  type="text" id="first_name" name="first_name"
-                                                value="{{ old('first_name') }}" class="form-control" placeholder="First Name">
-                                            @error('first_name')
-                                                <p class="text-danger">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <div class="form-group col-md-6">
-                                            <label for="last_name">Last Name</label>
-                                            <input  type="text" id="last_name" name="last_name"
-                                                value="{{ old('last_name') }}" class="form-control" placeholder="Last Name">
-                                            @error('last_name')
-                                                <p class="text-danger">{{ $message }}</p>
-                                            @enderror
-                                        </div> --}}
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="first_name">First Name *</label>
@@ -388,41 +371,9 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        {{-- <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Inout</label>
-                                                <input class="form-control" type="text" name="name"
-                                                    placeholder="">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Information</label>
-                                                <div class="custom-file">
-                                                    <input type="file" class="custom-file-input" id="customFile">
-                                                    <label class="custom-file-label" for="customFile">Select file</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Number *</label>
-                                                <input class="form-control" type="text" name="name"
-                                                    placeholder="">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Input Number</label>
-                                                <input class="form-control" type="text" name="name"
-                                                    placeholder="">
-                                            </div>
-                                        </div> --}}
                                     </div>
                                     <ul class="list-inline pull-right">
                                         <li><button type="button" class="default-btn prev-step">Back</button></li>
-                                        {{-- <li><button type="button" class="default-btn next-step skip-btn">Skip</button>
-                                        </li> --}}
                                         <li><button type="button" class="default-btn next-step"
                                                 style="color: white;">Continue</button></li>
                                     </ul>
@@ -587,10 +538,6 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="work">Work</label>
-                                                {{-- <input type="hidden" value="{{ old('work_country_dialCode') }}"
-                                                    id="work_country_dialCode" name="work_country_dialCode">
-                                                <input type="hidden" value="{{ old('work_iso2') }}" id="work_iso2"
-                                                    name="work_iso2"> --}}
                                                 <input type="text" id="work" name="kin_work"
                                                     value="{{ old('kin_work') }}" value="" class="form-control"
                                                     placeholder="">
@@ -599,11 +546,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-
-
                                     </div>
-
-
                                     <ul class="list-inline pull-right">
                                         <li><button type="button" class="default-btn prev-step">Back</button></li>
                                         <li><button type="submit" class="default-btn next-step"
@@ -612,7 +555,6 @@
                                 </div>
                                 <div class="clearfix"></div>
                             </div>
-
                         </form>
                     </div>
                 </div>
@@ -624,44 +566,30 @@
     <script src="{{ asset('js/wizard.js') }}"></script>
     <script>
         $(document).ready(function() {
-            //start same As  Physical address (this code will disable postal address if there is a validation error on form)
-
-
-            //country code for phone
             var input = document.querySelector("#phone");
             var itiphone = window.intlTelInput(input, {
                 separateDialCode: true,
                 preferredCountries: ["AU"],
                 initialCountry: "{{ old('phone_iso2') }}"
             });
-
-            // Retrieve selected country data
             function getSelectedCountryDataMobile() {
                 var countryData = itiphone.getSelectedCountryData();
                 var countryDialCode = countryData.dialCode;
-                // Set the value of the hidden input field
                 if (countryDialCode) {
                     document.getElementById('phone_country_dialCode').value = countryDialCode;
                     document.getElementById('phone_iso2').value = countryData.iso2;
                 }
-                // Check if there are old input values after validation
-
                 var oldPhoneNumber = "{{ old('phone') }}";
                 if (oldPhoneNumber !== '') {
                     $('#phone').val(oldPhoneNumber);
                 }
             }
 
-            // Event listener for when the country is changed
             input.addEventListener("countrychange", function() {
                 getSelectedCountryDataMobile();
             });
-            // Initial call to get selected country data
             getSelectedCountryDataMobile();
 
-
-
-            //country code for mobile
             var inputMobile = document.querySelector("#mobile");
             var itimobile = window.intlTelInput(inputMobile, {
                 separateDialCode: true,
@@ -669,31 +597,22 @@
                 initialCountry: "{{ old('mobile_iso2') }}"
             });
 
-            // Retrieve selected country data
             function getSelectedCountryDatamobile() {
                 var countryData = itimobile.getSelectedCountryData();
                 var countryDialCode = countryData.dialCode;
-                // Set the value of the hidden inputMobile field
                 if (countryDialCode) {
                     document.getElementById('mobile_country_dialCode').value = countryDialCode;
                     document.getElementById('mobile_iso2').value = countryData.iso2;
                 }
-                // Check if there are old inputMobile values after validation
-
                 var oldmobile = "{{ old('mobile') }}";
                 if (oldmobile !== '') {
-                    // Set the value manually and then reinitialize the mobile inputMobile
                     $('#mobile').val(oldmobile);
                 }
             }
-            // Event listener for when the country is changed
             inputMobile.addEventListener("countrychange", function() {
                 getSelectedCountryDatamobile();
             });
-            // Initial call to get selected country data
             getSelectedCountryDatamobile();
-
-            //country code for company_phone
             var inputcompany_phone = document.querySelector("#company_phone");
             var iticompany_phone = window.intlTelInput(inputcompany_phone, {
                 separateDialCode: true,
@@ -701,31 +620,23 @@
                 initialCountry: "{{ old('company_phone_iso2') }}"
             });
 
-            // Retrieve selected country data
             function getSelectedCountryDatacompany_phone() {
                 var countryData = iticompany_phone.getSelectedCountryData();
                 var countryDialCode = countryData.dialCode;
-                // Set the value of the hidden inputcompany_phone field
                 if (countryDialCode) {
                     document.getElementById('company_phone_country_dialCode').value = countryDialCode;
                     document.getElementById('company_phone_iso2').value = countryData.iso2;
                 }
-                // Check if there are old inputcompany_phone values after validation
-
                 var oldcompany_phone = "{{ old('company_phone') }}";
                 if (oldcompany_phone !== '') {
-                    // Set the value manually and then reinitialize the company_phone inputcompany_phone
                     $('#company_phone').val(oldcompany_phone);
                 }
             }
-            // Event listener for when the country is changed
             inputcompany_phone.addEventListener("countrychange", function() {
                 getSelectedCountryDatacompany_phone();
             });
-            // Initial call to get selected country data
             getSelectedCountryDatacompany_phone();
         });
-        //country code for kin_phone
         var input = document.querySelector("#kin_phone");
         var itikin_phone = window.intlTelInput(input, {
             separateDialCode: true,
@@ -733,33 +644,23 @@
             initialCountry: "{{ old('kin_phone_iso2') }}"
         });
 
-        // Retrieve selected country data
         function getSelectedCountryDataMobile() {
             var countryData = itikin_phone.getSelectedCountryData();
             var countryDialCode = countryData.dialCode;
-            // Set the value of the hidden input field
             if (countryDialCode) {
                 document.getElementById('kin_phone_country_dialCode').value = countryDialCode;
                 document.getElementById('kin_phone_iso2').value = countryData.iso2;
             }
-            // Check if there are old input values after validation
-
             var oldPhoneNumber = "{{ old('kin_phone') }}";
             if (oldPhoneNumber !== '') {
                 $('#kin_phone').val(oldPhoneNumber);
             }
         }
-
-        // Event listener for when the country is changed
         input.addEventListener("countrychange", function() {
             getSelectedCountryDataMobile();
         });
-        // Initial call to get selected country data
         getSelectedCountryDataMobile();
 
-
-
-        //country code for kin_mobile
         var inputMobile = document.querySelector("#kin_mobile");
         var itikin_mobile = window.intlTelInput(inputMobile, {
             separateDialCode: true,
@@ -767,72 +668,25 @@
             initialCountry: "{{ old('kin_mobile_iso2') }}"
         });
 
-        // Retrieve selected country data
         function getSelectedCountryDatakin_mobile() {
             var countryData = itikin_mobile.getSelectedCountryData();
             var countryDialCode = countryData.dialCode;
-            // Set the value of the hidden inputMobile field
             if (countryDialCode) {
                 document.getElementById('kin_mobile_country_dialCode').value = countryDialCode;
                 document.getElementById('kin_mobile_iso2').value = countryData.iso2;
             }
-            // Check if there are old inputMobile values after validation
 
             var oldkin_mobile = "{{ old('kin_mobile') }}";
             if (oldkin_mobile !== '') {
-                // Set the value manually and then reinitialize the kin_mobile inputMobile
                 $('#kin_mobile').val(oldkin_mobile);
             }
         }
-        // Event listener for when the country is changed
         inputMobile.addEventListener("countrychange", function() {
             getSelectedCountryDatakin_mobile();
         });
-        // Initial call to get selected country data
         getSelectedCountryDatakin_mobile();
 
 
-
-        //country code for work
-        // var inputMobile = document.querySelector("#work");
-        // var itiwork = window.intlTelInput(inputMobile, {
-        //     separateDialCode: true,
-        //     preferredCountries: ["AU"],
-        //     initialCountry: "{{ old('work_iso2') }}"
-        // });
-
-        // // Retrieve selected country data
-        // function getSelectedCountryDatawork() {
-        //     var countryData = itiwork.getSelectedCountryData();
-        //     var countryDialCode = countryData.dialCode;
-        //     // Set the value of the hidden inputMobile field
-        //     if (countryDialCode) {
-        //         document.getElementById('work_country_dialCode').value = countryDialCode;
-        //         document.getElementById('work_iso2').value = countryData.iso2;
-        //     }
-        //     // Check if there are old inputMobile values after validation
-
-        //     var oldwork = "{{ old('work') }}";
-        //     if (oldwork !== '') {
-        //         // Set the value manually and then reinitialize the work inputMobile
-        //         $('#work').val(oldwork);
-        //     }
-        // }
-        // // Event listener for when the country is changed
-        // inputMobile.addEventListener("countrychange", function() {
-        //     getSelectedCountryDatawork();
-        // });
-        // // Initial call to get selected country data
-        // getSelectedCountryDatawork();
     </script>
 
-
-    {{-- <script>
-        $(document).ready(function() {
-            $('.wizard-v4-content').on('click', 'a[href="#finish"]', function(event) {
-                event.preventDefault(); // Prevent default link behavior
-                $('#myForm').submit(); // Submit the form with ID 'myForm'
-            });
-        });
-    </script> --}}
 @endsection

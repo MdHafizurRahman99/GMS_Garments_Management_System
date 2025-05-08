@@ -237,6 +237,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/get-schedule-data-by-id', [StaffScheduleController::class, 'getScheduleDataById'])->name('get.schedule.data.by.id');
 });
 
-// use for test
 Route::resource('test', TryTestController::class);
 require __DIR__ . '/auth.php';
