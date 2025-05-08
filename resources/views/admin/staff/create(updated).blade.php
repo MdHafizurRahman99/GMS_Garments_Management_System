@@ -29,10 +29,7 @@
                                     <a href="#step1" data-toggle="tab" aria-controls="step1" role="tab"
                                         aria-expanded="true"><span class="round-tab">1 </span> <i>Step 1</i></a>
                                 </li>
-                                {{-- <li role="presentation" class="disabled">
-                                    <a href="#step2" data-toggle="tab" aria-controls="step2" role="tab"
-                                        aria-expanded="false"><span class="round-tab">2</span> <i>Step 2</i></a>
-                                </li> --}}
+
                                 <li role="presentation" class="disabled">
                                     <a href="#step3" data-toggle="tab" aria-controls="step3" role="tab"><span
                                             class="round-tab">2</span> <i>Step 2</i></a>
@@ -66,22 +63,7 @@
                                 <div class="tab-pane active" role="tabpanel" id="step1">
                                     <h4 class="text-center">Employee or Contractor Details </h4>
                                     <div class="row">
-                                        {{-- <div class="form-group col-md-6">
-                                            <label for="first_name">First Name</label>
-                                            <input  type="text" id="first_name" name="first_name"
-                                                value="{{ old('first_name') }}" class="form-control" placeholder="First Name">
-                                            @error('first_name')
-                                                <p class="text-danger">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <div class="form-group col-md-6">
-                                            <label for="last_name">Last Name</label>
-                                            <input  type="text" id="last_name" name="last_name"
-                                                value="{{ old('last_name') }}" class="form-control" placeholder="Last Name">
-                                            @error('last_name')
-                                                <p class="text-danger">{{ $message }}</p>
-                                            @enderror
-                                        </div> --}}
+
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="first_name">First Name *</label>
@@ -232,6 +214,21 @@
                                                 @enderror
                                             </div>
                                         </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="employee_type">Employee Type</label>
+                                                <select id="employee_type" name="employee_type" class="form-control">
+                                                    <option value="full_time" {{ old('employee_type') == 'full_time' ? 'selected' : '' }}>Full Time</option>
+                                                    <option value="part_time" {{ old('employee_type') == 'part_time' ? 'selected' : '' }}>Part Time</option>
+                                                    <option value="casual" {{ old('employee_type') == 'casual' ? 'selected' : '' }}>Casual</option>
+                                                </select>
+                                                @error('employee_type')
+                                                    <p class="text-danger">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                        </div>
+
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="employee_tax_file">Employee Tax File</label>

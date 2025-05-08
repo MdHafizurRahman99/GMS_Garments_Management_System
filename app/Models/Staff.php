@@ -23,6 +23,7 @@ class Staff extends Model
         'phone',
         'mobile',
         'email',
+        'employee_type',
         'employee_tax_file',
         'super_fund',
         'member_no',

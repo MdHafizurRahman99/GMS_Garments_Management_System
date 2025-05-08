@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('mobile')->nullable();
             $table->string('email')->nullable();
+            $table->string('employee_type')->nullable();
             $table->string('employee_tax_file')->nullable();
             $table->string('super_fund')->nullable();
             $table->string('member_no')->nullable();

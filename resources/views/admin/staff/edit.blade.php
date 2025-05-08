@@ -254,6 +254,19 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
+                                                <label for="employee_type">Employee Type</label>
+                                                <select id="employee_type" name="employee_type" class="form-control">
+                                                    <option value="full_time" {{ old('employee_type', $staff->employee_type ?? '') == 'full_time' ? 'selected' : '' }}>Full Time</option>
+                                                    <option value="part_time" {{ old('employee_type', $staff->employee_type ?? '') == 'part_time' ? 'selected' : '' }}>Part Time</option>
+                                                    <option value="casual" {{ old('employee_type', $staff->employee_type ?? '') == 'casual' ? 'selected' : '' }}>Casual</option>
+                                                </select>
+                                                @error('employee_type')
+                                                    <p class="text-danger">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
                                                 <label for="employee_tax_file">Employee Tax File</label>
                                                 <input type="text" id="employee_tax_file" name="employee_tax_file"
                                                     value="{{ old('employee_tax_file', $staff->employee_tax_file ?? '') }}"
@@ -481,7 +494,7 @@
                                                     placeholder="">
                                             </div>
                                         </div>
-                     
+
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="business_number">Australian Business Number(ABN)</label>
@@ -495,7 +508,7 @@
                                                 <input type="button" name="ButtonAbnLookup" value="ABN Lookup"
                                                     id="ButtonAbnLookup" onclick="abnLookup('TextBoxAbn','TextBoxGuid');"
                                                     class="form-control btn-primary mt-2  " />
-                       
+
                                                 @error('business_number')
                                                     <p class="text-danger">{{ $message }}</p>
                                                 @enderror
