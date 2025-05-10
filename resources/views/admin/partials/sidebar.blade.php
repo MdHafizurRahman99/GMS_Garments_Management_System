@@ -20,8 +20,10 @@
             <div id="collapseAttendance" class="collapse" aria-labelledby="headingAttendance" data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
-                    <a class="collapse-item" href="{{ route('attendance.admin') }}">Index(admin)</a>
-                    <a class="collapse-item" href="{{ route('attendance.index') }}">Index(user)</a>
+                    @if (auth()->user()->role == 'admin')
+                        <a class="collapse-item" href="{{ route('attendance.admin') }}">Index(admin)</a>
+                    @endif
+                    <a class="collapse-item" href="{{ route('attendance.index') }}">Index</a>
                     {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
                 </div>
             </div>
