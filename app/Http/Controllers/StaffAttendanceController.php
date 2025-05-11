@@ -105,7 +105,6 @@ class StaffAttendanceController extends Controller
             ->whereNotNull('check_out')
             ->select(DB::raw('TIME_FORMAT(AVG(TIME_TO_SEC(check_out)), "%H:%i") as avg_check_out'))
             ->first();
-
         return view('admin.attendance.index', [
             'attendanceHistory' => $attendanceHistory,
             'todayAttendances' => $todayAttendances,

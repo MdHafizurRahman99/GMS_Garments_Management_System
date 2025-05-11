@@ -441,7 +441,7 @@
                             </div>
                         </div>
 
-                        <div class="summary-item">
+                        {{-- <div class="summary-item">
                             <div class="summary-icon">
                                 <i class="fa fa-sign-in"></i>
                             </div>
@@ -457,7 +457,7 @@
                             <div>
                                 Avg. Check-out: {{ $avgCheckOut }}
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
