@@ -24,7 +24,7 @@ class StaffAttendanceController extends Controller
         $staff = Staff::where('user_id', $userId)->first();
 
         if (!$staff) {
-            return redirect()->back()->with('error', 'Staff record not found for this user.');
+            return redirect('staff/create')->with('message', 'Staff record not found for this user.Please create one.');
         }
 
         // Get the filter date or use today
