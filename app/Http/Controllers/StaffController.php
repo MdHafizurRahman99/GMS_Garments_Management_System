@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 use App\Models\Staff;
 use App\Models\StaffSchedule;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +48,20 @@ class StaffController extends Controller
      */
     public function create()
     {
-        return view('admin.staff.create(updated)');
+
+        $userId = Auth::id();
+        $staff = Staff::where('user_id', $userId)->first();
+        if (Auth::user()->hasRole('User') && $staff) {
+            return view(
+                'admin.staff.edit',
+                [
+                    'staff' => $staff,
+                ]
+            );
+        }
+
+        $employees = User::all();
+        return view('admin.staff.create(updated)', compact('employees'));
     }
     /**
      * Store a newly created resource in storage.
@@ -139,7 +153,8 @@ class StaffController extends Controller
             'company_address' => 'required_if:contractor,Yes',
             'company_phone' => 'required_if:contractor,Yes',
             'company_email' => [
-                'required_if:contractor,Yes', function ($attribute, $value, $fail) use ($request) {
+                'required_if:contractor,Yes',
+                function ($attribute, $value, $fail) use ($request) {
                     // Custom validation logic here
                     if (!filter_var($value, FILTER_VALIDATE_EMAIL) && $request->contractor == 'Yes') {
                         $fail('The email format is invalid.');
@@ -232,7 +247,11 @@ class StaffController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
         // return $request;
-        $userId = Auth::id();
+        if (Auth::user()->hasRole('User')) {
+            $userId = Auth::id();
+        } else {
+            $userId = $request->employee_id;
+        }
 
         $phoneNumber = '+' . $request->phone_country_dialCode . '  ' . $request->phone;
         $mobileNumber = '+' . $request->mobile_country_dialCode . '  ' . $request->mobile;
@@ -523,7 +542,8 @@ class StaffController extends Controller
             'company_address' => 'required_if:contractor,Yes',
             'company_phone' => 'required_if:contractor,Yes',
             'company_email' => [
-                'required_if:contractor,Yes', function ($attribute, $value, $fail) use ($request) {
+                'required_if:contractor,Yes',
+                function ($attribute, $value, $fail) use ($request) {
                     // Custom validation logic here
                     if (!filter_var($value, FILTER_VALIDATE_EMAIL) && $request->contractor == 'Yes') {
                         $fail('The email format is invalid.');
@@ -615,7 +635,7 @@ class StaffController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
         // return $request;
-        $userId = Auth::id();
+        // $userId = Auth::id();
 
         $phoneNumber = '+' . $request->phone_country_dialCode . '  ' . $request->phone;
         $mobileNumber = '+' . $request->mobile_country_dialCode . '  ' . $request->mobile;
@@ -670,7 +690,7 @@ class StaffController extends Controller
 
         $id->update(
             [
-                'user_id' => $userId,
+                // 'user_id' => $userId,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'start_date' => $request->start_date,
