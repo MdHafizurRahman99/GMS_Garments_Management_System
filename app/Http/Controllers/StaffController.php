@@ -43,9 +43,7 @@ class StaffController extends Controller
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         $userId = Auth::id();
@@ -234,6 +232,7 @@ class StaffController extends Controller
         $abn = preg_replace("/[^\d]/", "", $request->business_number);
         $output_abn = chunk_split(substr($abn, 0, 2), 2, ' ') . chunk_split(substr($abn, 2), 3, ' ');
         $output_abn = rtrim($output_abn);
+
 
         $acn = preg_replace("/[^\d]/", "", $request->company_number);
         $output_acn = chunk_split($acn, 3, ' ');

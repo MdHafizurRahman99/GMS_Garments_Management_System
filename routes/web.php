@@ -25,6 +25,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Models\Cost;
 use App\Models\StaffSchedule;
 use GuzzleHttp\Psr7\Request;
+
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,13 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('config:cache');
+
+    return 'Cache Cleared!';
+});
 
 Route::get('/clear-cache', function () {
     Artisan::call('config:clear');
@@ -236,6 +244,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/get-schedule-data-by-id', [StaffScheduleController::class, 'getScheduleDataById'])->name('get.schedule.data.by.id');
 });
+
 
 Route::resource('test', TryTestController::class);
 require __DIR__ . '/auth.php';
