@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('title')
-    Add Permission
+    Add Role
 @endsection
 
 @section('css')
@@ -35,8 +35,8 @@
                             {{ 'There is invalid information in Form Data' }}
                         </div>
                     @endif
-                    <h3 class="heading">Add Permission </h3>
-                    {{-- <p>Add Permissions </p> --}}
+                    <h3 class="heading">Add Role </h3>
+                    {{-- <p>Add Roles </p> --}}
                 </div>
                 <form class="form-register" id="myForm" action="{{ route('role.store') }}" method="post">
                     @csrf

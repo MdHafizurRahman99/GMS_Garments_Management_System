@@ -5,18 +5,41 @@
         <div class="sidebar-brand-icon rotate-n-15">
             <i class="fa fa-briefcase" aria-hidden="true"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">EMS </div>
+        <div class="sidebar-brand-text mx-3">GMS</div>
     </a>
+
+    @if (Auth::user()->can('attendance.view'))
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAttendance"
+                aria-expanded="true" aria-controls="collapseAttendance">
+                {{-- <i class="fa fa-Attendance" aria-hidden="true"></i> --}}
+                <span>Attendance informations</span>
+            </a>
+
+            <div id="collapseAttendance" class="collapse" aria-labelledby="headingAttendance" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                    @if (auth()->user()->role == 'admin')
+                        <a class="collapse-item" href="{{ route('attendance.admin') }}">Index(admin)</a>
+                    @endif
+                    <a class="collapse-item" href="{{ route('attendance.index') }}">Index</a>
+                    {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                </div>
+            </div>
+        </li>
+    @endif
 
     @if (Auth::user()->can('staff.view'))
         <hr class="sidebar-divider my-0">
         <li class="nav-item">
+
+            @if (auth()->user()->role == 'admin')
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff"
                 aria-expanded="true" aria-controls="collapseStaff">
                 {{-- <i class="fa fa-Staff" aria-hidden="true"></i> --}}
                 <span>Staff informations</span>
             </a>
-
             <div id="collapseStaff" class="collapse" aria-labelledby="headingStaff" data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
@@ -25,9 +48,26 @@
                     {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
                 </div>
             </div>
+            @else
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff"
+                    aria-expanded="true" aria-controls="collapseStaff">
+                    {{-- <i class="fa fa-Staff" aria-hidden="true"></i> --}}
+                    <span>Additional informations</span>
+                </a>
+                <div id="collapseStaff" class="collapse" aria-labelledby="headingStaff" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                        {{-- <a class="collapse-item" href="{{ route('staff.create') }}">Staff Form</a> --}}
+                        <a class="collapse-item" href="{{ route('staff.create') }}">Create/Update</a>
+                        {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                    </div>
+                </div>
+            @endif
+
 
         </li>
     @endif
+
     <!-- Divider -->
     @if (Auth::user()->can('shift.view'))
         <li class="nav-item">
@@ -167,6 +207,103 @@
 
 
     <hr class="sidebar-divider">
+    @if (Auth::user()->can('transactions.view'))
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsetransactions"
+                aria-expanded="true" aria-controls="collapsetransactions">
+                <i class="fa fa-briefcase" aria-hidden="true"></i>
+                <span>Transactions</span>
+            </a>
+            <div id="collapsetransactions" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                    {{-- @if (Auth::user()->can('transactions.add'))
+                        <a class="collapse-item" href="{{ route('costs.create') }}">Add transactions </a>
+                    @endif --}}
+                    <a class="collapse-item" href="{{ route('transactions.index') }}">Transactions</a>
+                    {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                </div>
+            </div>
+        </li>
+    @endif
+    @if (Auth::user()->can('income.view'))
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseincome"
+                aria-expanded="true" aria-controls="collapseincome">
+                <i class="fa fa-briefcase" aria-hidden="true"></i>
+                <span>Income</span>
+            </a>
+            <div id="collapseincome" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                    {{-- @if (Auth::user()->can('income.add'))
+                        <a class="collapse-item" href="{{ route('costs.create') }}">Add income </a>
+                    @endif --}}
+                    <a class="collapse-item" href="{{ route('incomes.index') }}">Incomes</a>
+                    {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                </div>
+            </div>
+        </li>
+    @endif
+    @if (Auth::user()->can('expense.view'))
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseexpense"
+                aria-expanded="true" aria-controls="collapseexpense">
+                <i class="fa fa-briefcase" aria-hidden="true"></i>
+                <span>Expense</span>
+            </a>
+            <div id="collapseexpense" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                    {{-- @if (Auth::user()->can('expense.add'))
+                        <a class="collapse-item" href="{{ route('costs.create') }}">Add expense </a>
+                    @endif --}}
+                    <a class="collapse-item" href="{{ route('costs.index') }}">Expenses</a>
+                    {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                </div>
+            </div>
+        </li>
+    @endif
+
+    @if (Auth::user()->can('payrolls.view'))
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsepayrolls"
+                aria-expanded="true" aria-controls="collapsepayrolls">
+                <i class="fa fa-briefcase" aria-hidden="true"></i>
+                <span>Payrolls</span>
+            </a>
+            <div id="collapsepayrolls" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                    {{-- @if (Auth::user()->can('payrolls.add'))
+                        <a class="collapse-item" href="{{ route('payrolls.create') }}">Add payrolls </a>
+                    @endif --}}
+                    <a class="collapse-item" href="{{ route('payrolls.index') }}">Payrolls</a>
+                    {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                </div>
+            </div>
+        </li>
+    @endif
+    @if (Auth::user()->can('leaves.view'))
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseleaves"
+                aria-expanded="true" aria-controls="collapseleaves">
+                <i class="fa fa-briefcase" aria-hidden="true"></i>
+                <span>Leaves</span>
+            </a>
+            <div id="collapseleaves" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                    {{-- @if (Auth::user()->can('leaves.add'))
+                        <a class="collapse-item" href="{{ route('leaves.create') }}">Add leaves </a>
+                    @endif --}}
+                    <a class="collapse-item" href="{{ route('leaves.index') }}">Leaves</a>
+                    {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+                </div>
+            </div>
+        </li>
+    @endif
+    <hr class="sidebar-divider">
     @if (Auth::user()->can('permission.view'))
         <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePermission"
@@ -250,6 +387,27 @@
         </li>
         <hr class="sidebar-divider">
     @endif
+
+
+    @if (Auth::user()->can('setting.view'))
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsesetting"
+            aria-expanded="true" aria-controls="collapsesetting">
+            <i class="fa fa-briefcase" aria-hidden="true"></i>
+            <span>Settings</span>
+        </a>
+        <div id="collapsesetting" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                {{-- @if (Auth::user()->can('setting.add'))
+                    <a class="collapse-item" href="{{ route('costs.create') }}">Add setting </a>
+                @endif --}}
+                <a class="collapse-item" href="{{ route('settings.index') }}">Settings</a>
+                {{-- <a class="collapse-item" href="cards.html">Cards</a> --}}
+            </div>
+        </div>
+    </li>
+@endif
     <!-- Sidebar Toggler (Sidebar) -->
     <div class="text-center d-none d-md-inline">
         <button class="rounded-circle border-0" id="sidebarToggle"></button>

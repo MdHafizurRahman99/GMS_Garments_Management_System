@@ -3,7 +3,7 @@
     Dashboard
 @endsection
 
-{{-- @section('content')
+@section('content')
     <div class="container-fluid">
 
         <!-- Page Heading -->
@@ -326,4 +326,4 @@
         </div>
 
     </div>
-@endsection --}}
+@endsection

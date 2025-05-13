@@ -16,8 +16,13 @@ return new class extends Migration
             $table->string('name');
             $table->string('role')->nullable();
             $table->string('email')->unique();
+            $table->string('profile_picture')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->decimal('HourlyRate', 10, 2)->nullable();
+            $table->decimal('Salary', 15, 2)->nullable();
+            $table->string('BankAccountNumber')->nullable();
+            $table->string('TaxFileNumber')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -26,7 +31,7 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    
+
     public function down(): void
     {
         Schema::dropIfExists('users');

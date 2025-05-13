@@ -1,19 +1,31 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusniessProfileController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientRequestController;
+use App\Http\Controllers\CostController;
+use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Permission\RolesPermissionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StaffAttendanceController;
 use App\Http\Controllers\StaffScheduleController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TryTestController;
+use App\Http\Controllers\UserProfileController;
+use App\Models\Cost;
 use App\Models\StaffSchedule;
+use GuzzleHttp\Psr7\Request;
+
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -34,19 +46,87 @@ Route::get('/clear-cache', function () {
     return 'Cache Cleared!';
 });
 
-Route::get('/', function () {
-    return view('front-end.home.home');
-})->name('/');
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('config:cache');
 
-Route::get('/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return 'Cache Cleared!';
+});
+// Route::GET('/', function () {
+//     return view('front-end.home.home');
+// })->name('/');
+
+
+Route::get('/', function () {
+    return redirect('/login');
+})->name('/');
+// Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('/');
+Route::get(
+    '/dashboard',
+    //  [CostController::class, 'index']
+    function () {
+        $user = auth()->user();
+        return redirect()->route('transactions.index');
+        // return redirect()->route('costs.index');
+        // return view('admin.profile.show', compact('user'));
+        // $costs = Cost::orderBy('created_at', 'desc')->paginate(10);
+        // return view('admin.dashboard', compact('costs'));
+    }
+)->middleware(['auth', 'verified'])->name('dashboard');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::resource('settings', SettingsController::class);
+
+    // Settings routes
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        // Payment Methods
+        Route::post('/payment-methods', [SettingsController::class, 'storePaymentMethod'])->name('payment-methods.store');
+        Route::get('/payment-methods/{paymentMethod}/edit', [SettingsController::class, 'editPaymentMethod'])->name('payment-methods.edit');
+        Route::put('/payment-methods/{paymentMethod}', [SettingsController::class, 'updatePaymentMethod'])->name('payment-methods.update');
+        Route::delete('/payment-methods/{paymentMethod}', [SettingsController::class, 'destroyPaymentMethod'])->name('payment-methods.destroy');
+
+        // Income Sources
+        Route::post('/income-sources', [SettingsController::class, 'storeIncomeSource'])->name('income-sources.store');
+        Route::get('/income-sources/{incomeSource}/edit', [SettingsController::class, 'editIncomeSource'])->name('income-sources.edit');
+        Route::put('/income-sources/{incomeSource}', [SettingsController::class, 'updateIncomeSource'])->name('income-sources.update');
+        Route::delete('/income-sources/{incomeSource}', [SettingsController::class, 'destroyIncomeSource'])->name('income-sources.destroy');
+
+        // Income Types
+        Route::post('/income-types', [SettingsController::class, 'storeIncomeType'])->name('income-types.store');
+        Route::get('/income-types/{incomeType}/edit', [SettingsController::class, 'editIncomeType'])->name('income-types.edit');
+        Route::put('/income-types/{incomeType}', [SettingsController::class, 'updateIncomeType'])->name('income-types.update');
+        Route::delete('/income-types/{incomeType}', [SettingsController::class, 'destroyIncomeType'])->name('income-types.destroy');
+
+        // Expense Types
+        Route::post('/expense-types', [SettingsController::class, 'storeExpenseType'])->name('expense-types.store');
+        Route::get('/expense-types/{expenseType}/edit', [SettingsController::class, 'editExpenseType'])->name('expense-types.edit');
+        Route::put('/expense-types/{expenseType}', [SettingsController::class, 'updateExpenseType'])->name('expense-types.update');
+        Route::delete('/expense-types/{expenseType}', [SettingsController::class, 'destroyExpenseType'])->name('expense-types.destroy');
+    });
+
+    Route::get('/transactions/details', [TransactionController::class, 'getTransactionDetails'])->name('transactions.details');
+    Route::resource('incomes', IncomeController::class);
+    Route::resource('costs', CostController::class);
+    Route::resource('incomes', IncomeController::class);
+    Route::resource('transactions', TransactionController::class);
+    Route::resource('payrolls', PayrollController::class);
+
+    Route::get('/user-profile', [UserProfileController::class, 'show'])->name('user-profile.show');
+    Route::put('/user-profile', [UserProfileController::class, 'update'])->name('user-profile.update');
+    Route::put('/user-profile/password', [UserProfileController::class, 'updatePassword'])->name('user-profile.password');
+
+    // Route::middleware(['auth'])->group(function () {
+    Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
+    Route::post('/leaves', [LeaveController::class, 'store'])->name('leaves.store');
+    Route::patch('/leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.update-status');
+    Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
+    // });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -107,6 +187,29 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/index', [AdminController::class, 'index'])->name('admin.index')->middleware('permission:admin.view');
     Route::post('admin/destroy/{id}', [AdminController::class, 'destroy'])->name('admin.destroy')->middleware('permission:admin.delete');
 
+    Route::get('attendance/create', [StaffAttendanceController::class, 'create'])->name('attendance.create')->middleware('permission:attendance.add');
+    // Route::post('attendance/store', [StaffAttendanceController::class, 'store'])->name('attendance.store')->middleware('permission:attendance.add');
+    Route::get('attendance/edit/{id}', [StaffAttendanceController::class, 'edit'])->name('attendance.edit')->middleware('permission:attendance.edit');
+    Route::post('attendance/update/{id}', [StaffAttendanceController::class, 'update'])->name('attendance.update')->middleware('permission:attendance.edit');
+    Route::get('attendance/index', [StaffAttendanceController::class, 'index'])->name('attendance.index')->middleware('permission:attendance.view');
+    // Route::post('attendance/destroy/{id}', [StaffAttendanceController::class, 'destroy'])->name('attendance.destroy')->middleware('permission:attendance.delete');
+    Route::post('/attendance/check-in', [StaffAttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::post('/attendance/check-out', [StaffAttendanceController::class, 'checkOut'])->name('attendance.check-out');
+    Route::get('/admin/attendance', [StaffAttendanceController::class, 'adminIndex'])->name('attendance.admin');
+    Route::post('/admin/attendance', [StaffAttendanceController::class, 'store'])->name('attendance.store');
+    Route::delete('/admin/attendance/{id}', [StaffAttendanceController::class, 'destroy'])->name('attendance.destroy');
+    Route::post('/admin/attendance/overtime/{id}', [StaffAttendanceController::class, 'updateOvertimeStatus'])->name('attendance.update-overtime');
+
+    // API routes for AJAX
+    Route::get('/api/staff-schedules', function (Request $request) {
+        $staffId = $request->input('staff_id');
+        $schedules = StaffSchedule::with('shift')
+            ->where('staff_id', $staffId)
+            ->get();
+
+        return response()->json(['schedules' => $schedules]);
+    });
+
     // Route::get('staff/create', [StaffController::class, 'create'])->name('staff.create');
     Route::get('staff/create', [StaffController::class, 'create'])->name('staff.create')->middleware('permission:staff.add');
     // Route::post('staff/store', [StaffController::class, 'store'])->name('staff.store');
@@ -138,8 +241,10 @@ Route::middleware('auth')->group(function () {
     Route::post('staffschedule/update', [StaffScheduleController::class, 'update'])->name('staffschedule.update')->middleware('permission:staffschedule.edit');
     Route::get('staffschedule/index', [StaffScheduleController::class, 'index'])->name('staffschedule.index')->middleware('permission:staffschedule.view');
     Route::post('staffschedule/destroy/{id}', [StaffScheduleController::class, 'destroy'])->name('staffschedule.destroy')->middleware('permission:staffschedule.delete');
+
+    Route::get('/get-schedule-data-by-id', [StaffScheduleController::class, 'getScheduleDataById'])->name('get.schedule.data.by.id');
 });
 
-// use for test
+
 Route::resource('test', TryTestController::class);
 require __DIR__ . '/auth.php';

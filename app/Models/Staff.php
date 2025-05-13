@@ -23,6 +23,7 @@ class Staff extends Model
         'phone',
         'mobile',
         'email',
+        'employee_type',
         'employee_tax_file',
         'super_fund',
         'member_no',
@@ -56,10 +57,17 @@ class Staff extends Model
         'kin_work',
         'about_validate_file',
         'address_validate_file',
-
     ];
     public function schedules()
     {
         return $this->hasMany(StaffSchedule::class);
+    }
+
+    /**
+     * Get the attendance records for the staff.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(StaffAttendance::class);
     }
 }
