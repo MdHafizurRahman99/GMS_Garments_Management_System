@@ -14,6 +14,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\StaffScheduleController;
 use App\Http\Controllers\TryTestController;
 use App\Models\StaffSchedule;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,6 +26,13 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('config:cache');
+
+    return 'Cache Cleared!';
+});
 
 Route::get('/', function () {
     return view('front-end.home.home');
@@ -132,6 +140,6 @@ Route::middleware('auth')->group(function () {
     Route::post('staffschedule/destroy/{id}', [StaffScheduleController::class, 'destroy'])->name('staffschedule.destroy')->middleware('permission:staffschedule.delete');
 });
 
-// use for test 
+// use for test
 Route::resource('test', TryTestController::class);
 require __DIR__ . '/auth.php';
