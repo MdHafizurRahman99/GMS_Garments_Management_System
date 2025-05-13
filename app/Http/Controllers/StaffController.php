@@ -74,17 +74,14 @@ class StaffController extends Controller
         // Determine user ID based on role
         $userId = Auth::user()->hasRole('User') ? Auth::id() : $request->employee_id;
 
-        // Check if staff info already exists for the user
         $existingStaff = Staff::where('user_id', $userId)->first();
 
         if ($existingStaff) {
-            // return $existingStaff;
-            if (Auth::user()->hasRole('User')) {
+            if (Auth::user()->hasRole(roles: 'User')) {
                 return $this->update($request, $existingStaff);
                 // Admin: Prevent creation if staff info exists
             } else {
                 return redirect()->route('staff.index')->with('message', 'User already has staff info,Please update staff info');
-                // User: Update existing staff info
             }
         }
         // $ip = $_SERVER['REMOTE_ADDR'];
